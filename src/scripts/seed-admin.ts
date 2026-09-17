@@ -41,12 +41,8 @@ async function bootstrap() {
   console.log(`Email:    ${user.email}`);
   console.log(`Name:     ${user.firstName} ${user.lastName}`);
   console.log(`Role:     ${user.role}`);
-  if (isGenerated) {
-    console.log(`Password: ${password}`);
-    console.log('IMPORTANT: Please save this password immediately and change it upon first login!');
-  } else {
-    console.log('Password: (Password specified via environment or arguments)');
-  }
+  console.log(`Password: ${password}`);
+  console.log('IMPORTANT: Please save this password immediately and change it upon first login!');
   console.log('====================================================');
 
   await app.close();
