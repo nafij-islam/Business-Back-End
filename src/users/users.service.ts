@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
@@ -6,8 +6,26 @@ import * as bcrypt from 'bcrypt';
 import { Role } from '../common/enums';
 
 @Injectable()
-export class UsersService {
+export class UsersService implements OnApplicationBootstrap {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(@InjectModel(User.name) private readonly userModel: Model<UserDocument>) {}
+
+  async onApplicationBootstrap() {
+    const count = await this.userModel.countDocuments().exec();
+    if (count === 0) {
+      const email = 'admin@apexenterprise.com';
+      const password = process.env.INITIAL_ADMIN_PASSWORD || 'Admin@123456';
+      await this.create({
+        firstName: 'Business',
+        lastName: 'Owner',
+        email,
+        password,
+        role: Role.OWNER,
+      });
+      this.logger.log(`Default administrator seeded on startup: ${email} / ${password}`);
+    }
+  }
 
   async findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email: email.toLowerCase().trim() }).exec();
