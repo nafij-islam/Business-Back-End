@@ -1,14 +1,13 @@
 import { Module, Global, Logger } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongoMemoryReplSet } from 'mongodb-memory-server';
-
-let memoryReplSet: MongoMemoryReplSet | null = null;
+let memoryReplSet: any = null;
 
 export async function getInMemoryReplSetUri(): Promise<string> {
   if (!memoryReplSet) {
     const logger = new Logger('MongoMemoryReplSet');
     logger.log('Starting MongoMemoryReplSet for local transactions...');
+    const { MongoMemoryReplSet } = await import('mongodb-memory-server');
     memoryReplSet = await MongoMemoryReplSet.create({
       replSet: { count: 1, storageEngine: 'wiredTiger' },
     });
