@@ -9,8 +9,10 @@ import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
-import * as compression from 'compression';
-import * as cookieParser from 'cookie-parser';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const compression = require('compression');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const cookieParser = require('cookie-parser');
 import express, { Express, Request, Response } from 'express';
 
 import { AppModule } from '../src/app.module';
