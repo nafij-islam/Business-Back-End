@@ -40,7 +40,8 @@ export async function stopInMemoryReplSet(): Promise<void> {
         // On Vercel serverless, ensure Atlas connection string is used and never launch in-memory replica set
         if (isVercel) {
           if (!uri || uri.includes('127.0.0.1') || uri.includes('localhost')) {
-            uri = 'mongodb+srv://business:qFeM7VXjvX7Fcqsg@cluster0.57pbeou.mongodb.net/business?appName=Cluster0';
+            uri =
+              'mongodb+srv://Business:Loj1xHBCYNnW1wnG@cluster0.elf5jw4.mongodb.net/Business?appName=Cluster0';
           }
         }
 
