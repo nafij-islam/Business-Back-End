@@ -34,16 +34,24 @@ export async function stopInMemoryReplSet(): Promise<void> {
       useFactory: async (configService: ConfigService) => {
         const logger = new Logger('DatabaseModule');
         const nodeEnv = configService.get<string>('app.nodeEnv') || process.env.NODE_ENV;
+        const isVercel = Boolean(process.env.VERCEL);
         let uri = configService.get<string>('database.uri') || process.env.MONGODB_URI;
 
+        // On Vercel serverless, ensure Atlas connection string is used and never launch in-memory replica set
+        if (isVercel) {
+          if (!uri || uri.includes('127.0.0.1') || uri.includes('localhost')) {
+            uri = 'mongodb+srv://business:qFeM7VXjvX7Fcqsg@cluster0.57pbeou.mongodb.net/business?appName=Cluster0';
+          }
+        }
+
         // In test mode or when specifically requested, use in-memory replica set
-        if (nodeEnv === 'test' || process.env.USE_MEMORY_DB === 'true') {
+        if (!isVercel && (nodeEnv === 'test' || process.env.USE_MEMORY_DB === 'true')) {
           uri = await getInMemoryReplSetUri();
           return { uri, autoIndex: true };
         }
 
-        // In development, test if provided URI is reachable; if not, gracefully fallback to in-memory replica set
-        if (nodeEnv === 'development' && uri && uri.includes('127.0.0.1')) {
+        // In development (only when not on Vercel), test if provided URI is reachable; if not, gracefully fallback to in-memory replica set
+        if (!isVercel && nodeEnv === 'development' && uri && uri.includes('127.0.0.1')) {
           try {
             const net = await import('net');
             const isPortOpen = await new Promise<boolean>((resolve) => {
@@ -82,7 +90,9 @@ export async function stopInMemoryReplSet(): Promise<void> {
 
         return {
           uri,
-          autoIndex: nodeEnv !== 'production',
+          serverSelectionTimeoutMS: 10000,
+          connectTimeoutMS: 10000,
+          autoIndex: nodeEnv !== 'production' && !isVercel,
         };
       },
     }),

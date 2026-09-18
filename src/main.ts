@@ -1,8 +1,10 @@
 import * as dns from 'dns';
-try {
-  dns.setServers(['8.8.8.8', '1.1.1.1']);
-} catch {
-  // ignore
+if (!process.env.VERCEL && process.platform === 'win32') {
+  try {
+    dns.setServers(['8.8.8.8', '1.1.1.1']);
+  } catch {
+    // ignore
+  }
 }
 
 import { NestFactory } from '@nestjs/core';
@@ -68,7 +70,7 @@ async function bootstrap() {
 
   // Global API prefix
   app.setGlobalPrefix(APP_CONSTANTS.API_PREFIX, {
-    exclude: ['health'],
+    exclude: ['health', '', '/'],
   });
 
   // Global Pipes, Filters, and Interceptors
