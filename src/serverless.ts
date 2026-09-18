@@ -15,7 +15,9 @@ import helmet from 'helmet';
 const compression = require('compression');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const cookieParser = require('cookie-parser');
-import express, { Express, Request, Response } from 'express';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const express = require('express');
+import type { Express, Request, Response } from 'express';
 
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
