@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SuppliersService } from './suppliers.service';
 import { CreateSupplierDto, UpdateSupplierDto } from './dto/supplier.dto';
@@ -40,10 +40,23 @@ export class SuppliersController {
     return this.suppliersService.findOne(id);
   }
 
+  @Get(':id/ledger')
+  @ApiOperation({ summary: 'Get supplier ledger statement' })
+  async getLedger(@Param('id') id: string) {
+    return this.suppliersService.getLedger(id);
+  }
+
   @Patch(':id')
   @Roles(Role.OWNER, Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Update supplier details' })
   async update(@Param('id') id: string, @Body() dto: UpdateSupplierDto) {
     return this.suppliersService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @Roles(Role.OWNER, Role.ADMIN)
+  @ApiOperation({ summary: 'Archive supplier' })
+  async remove(@Param('id') id: string) {
+    return this.suppliersService.remove(id);
   }
 }

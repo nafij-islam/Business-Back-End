@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto, UpdateCustomerDto } from './dto/customer.dto';
@@ -40,10 +40,23 @@ export class CustomersController {
     return this.customersService.findOne(id);
   }
 
+  @Get(':id/ledger')
+  @ApiOperation({ summary: 'Get customer transaction ledger statement' })
+  async getLedger(@Param('id') id: string) {
+    return this.customersService.getLedger(id);
+  }
+
   @Patch(':id')
   @Roles(Role.OWNER, Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Update customer details' })
   async update(@Param('id') id: string, @Body() dto: UpdateCustomerDto) {
     return this.customersService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @Roles(Role.OWNER, Role.ADMIN)
+  @ApiOperation({ summary: 'Archive/Delete customer' })
+  async remove(@Param('id') id: string) {
+    return this.customersService.remove(id);
   }
 }

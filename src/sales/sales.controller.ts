@@ -34,7 +34,7 @@ export class SalesController {
     return this.salesService.findOne(id);
   }
 
-  @Post(':id/return')
+  @Post([':id/return', ':id/returns'])
   @Roles(Role.OWNER, Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Process customer sale return' })
   async processReturn(

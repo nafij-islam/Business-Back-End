@@ -15,7 +15,7 @@ import { Role } from '../common/enums';
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
-  @Get('profit')
+  @Get(['profit', 'profit-loss'])
   @ApiOperation({
     summary:
       'Profit & Loss report (Gross Sales, Net Sales, COGS, Gross Profit, Operating Expenses, Net Operating Profit)',
@@ -28,7 +28,7 @@ export class ReportsController {
     return this.reportsService.getProfitReport(preset, startDate, endDate);
   }
 
-  @Get('products')
+  @Get(['products', 'product-performance'])
   @ApiOperation({ summary: 'Product performance report (Top selling and profitable products)' })
   async getProductPerformance(
     @Query('preset') preset?: DatePreset,
@@ -44,7 +44,7 @@ export class ReportsController {
     );
   }
 
-  @Get('categories')
+  @Get(['categories', 'category-performance'])
   @ApiOperation({ summary: 'Category performance report' })
   async getCategoryPerformance(
     @Query('preset') preset?: DatePreset,

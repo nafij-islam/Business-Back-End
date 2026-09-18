@@ -63,8 +63,8 @@ export class ExpensesController {
     return this.expensesService.updateCategory(id, dto);
   }
 
-  @Get('breakdown')
-  @ApiOperation({ summary: 'Get category-wise expense breakdown' })
+  @Get(['breakdown', 'summary'])
+  @ApiOperation({ summary: 'Get category-wise expense breakdown and summary' })
   async getBreakdown(@Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
     return this.expensesService.getCategoryBreakdown(
       startDate ? new Date(startDate) : undefined,

@@ -105,4 +105,49 @@ export class CustomersService {
 
     return customer;
   }
+
+  async remove(id: string): Promise<{ success: boolean; message: string }> {
+    const customer = await this.findOne(id);
+    customer.isActive = false;
+    await customer.save();
+    return { success: true, message: `Customer '${customer.name}' archived successfully` };
+  }
+
+  async getLedger(id: string): Promise<{ entries: any[] }> {
+    const customer = await this.findOne(id);
+    const sales = await this.customerModel.db
+      .collection('sales')
+      .find({ customer: customer._id })
+      .sort({ saleDate: 1, createdAt: 1 })
+      .toArray();
+
+    let runningBalance = customer.openingBalance || 0;
+    const entries: any[] = [];
+
+    if (customer.openingBalance) {
+      entries.push({
+        date: (customer as any).createdAt || new Date(),
+        type: 'Opening Balance',
+        reference: 'OPENING',
+        debit: customer.openingBalance > 0 ? customer.openingBalance : 0,
+        credit: customer.openingBalance < 0 ? Math.abs(customer.openingBalance) : 0,
+        balance: runningBalance,
+      });
+    }
+
+    for (const sale of sales) {
+      const due = sale.dueAmount !== undefined ? sale.dueAmount : ((sale.grandTotal || 0) - (sale.paidAmount || 0));
+      runningBalance += due;
+      entries.push({
+        date: sale.saleDate || sale.createdAt,
+        type: 'Sale Invoice',
+        reference: sale.invoiceNumber,
+        debit: sale.grandTotal,
+        credit: sale.paidAmount || 0,
+        balance: runningBalance,
+      });
+    }
+
+    return { entries };
+  }
 }

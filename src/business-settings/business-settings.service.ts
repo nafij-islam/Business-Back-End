@@ -41,22 +41,34 @@ export class BusinessSettingsService {
     const settings = await this.getSettings();
 
     if (dto.information) {
-      settings.information = { ...settings.information, ...dto.information };
+      if (!settings.information) settings.information = {} as any;
+      Object.assign(settings.information, dto.information);
+      settings.markModified('information');
     }
     if (dto.localization) {
-      settings.localization = { ...settings.localization, ...dto.localization };
+      if (!settings.localization) settings.localization = {} as any;
+      Object.assign(settings.localization, dto.localization);
+      settings.markModified('localization');
     }
     if (dto.branding) {
-      settings.branding = { ...settings.branding, ...dto.branding };
+      if (!settings.branding) settings.branding = {} as any;
+      Object.assign(settings.branding, dto.branding);
+      settings.markModified('branding');
     }
     if (dto.inventory) {
-      settings.inventory = { ...settings.inventory, ...dto.inventory };
+      if (!settings.inventory) settings.inventory = {} as any;
+      Object.assign(settings.inventory, dto.inventory);
+      settings.markModified('inventory');
     }
     if (dto.modules) {
-      settings.modules = { ...settings.modules, ...dto.modules };
+      if (!settings.modules) settings.modules = {} as any;
+      Object.assign(settings.modules, dto.modules);
+      settings.markModified('modules');
     }
     if (dto.invoice) {
-      settings.invoice = { ...settings.invoice, ...dto.invoice };
+      if (!settings.invoice) settings.invoice = {} as any;
+      Object.assign(settings.invoice, dto.invoice);
+      settings.markModified('invoice');
     }
 
     const saved = await settings.save();

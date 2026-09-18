@@ -89,4 +89,10 @@ export class BrandsService {
 
     return brand.save();
   }
+
+  async remove(id: string): Promise<{ success: boolean; message: string }> {
+    const brand = await this.findOne(id);
+    await this.brandModel.findByIdAndDelete(id).exec();
+    return { success: true, message: `Brand '${brand.name}' deleted successfully` };
+  }
 }

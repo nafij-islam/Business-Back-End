@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BrandsService } from './brands.service';
 import { CreateBrandDto, UpdateBrandDto } from './dto/brand.dto';
@@ -45,5 +45,12 @@ export class BrandsController {
   @ApiOperation({ summary: 'Update brand' })
   async update(@Param('id') id: string, @Body() dto: UpdateBrandDto) {
     return this.brandsService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @Roles(Role.OWNER, Role.ADMIN)
+  @ApiOperation({ summary: 'Delete brand' })
+  async remove(@Param('id') id: string) {
+    return this.brandsService.remove(id);
   }
 }

@@ -1,7 +1,14 @@
 import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BusinessSettingsService } from './business-settings.service';
-import { UpdateBusinessSettingsDto } from './dto/update-business-settings.dto';
+import {
+  UpdateBusinessSettingsDto,
+  BusinessInformationDto,
+  BrandingSettingsDto,
+  LocalizationSettingsDto,
+  InventorySettingsDto,
+  InvoiceSettingsDto,
+} from './dto/update-business-settings.dto';
 import { Public } from '../common/decorators/public.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -25,9 +32,57 @@ export class BusinessSettingsController {
   @Roles(Role.OWNER, Role.ADMIN)
   @ApiBearerAuth()
   @Patch()
-  @ApiOperation({ summary: 'Update business settings' })
+  @ApiOperation({ summary: 'Update all business settings' })
   async updateSettings(@Body() dto: UpdateBusinessSettingsDto, @CurrentUser('id') userId: string) {
     return this.settingsService.updateSettings(dto, userId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.OWNER, Role.ADMIN)
+  @ApiBearerAuth()
+  @Patch('general')
+  @ApiOperation({ summary: 'Update business general information' })
+  async updateGeneral(@Body() dto: BusinessInformationDto, @CurrentUser('id') userId: string) {
+    return this.settingsService.updateSettings({ information: dto }, userId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.OWNER, Role.ADMIN)
+  @ApiBearerAuth()
+  @Patch('branding')
+  @ApiOperation({ summary: 'Update branding colors and logo' })
+  async updateBranding(@Body() dto: BrandingSettingsDto, @CurrentUser('id') userId: string) {
+    return this.settingsService.updateSettings({ branding: dto }, userId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.OWNER, Role.ADMIN)
+  @ApiBearerAuth()
+  @Patch('localization')
+  @ApiOperation({ summary: 'Update localization and currency' })
+  async updateLocalization(
+    @Body() dto: LocalizationSettingsDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.settingsService.updateSettings({ localization: dto }, userId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.OWNER, Role.ADMIN)
+  @ApiBearerAuth()
+  @Patch('inventory')
+  @ApiOperation({ summary: 'Update inventory rules' })
+  async updateInventory(@Body() dto: InventorySettingsDto, @CurrentUser('id') userId: string) {
+    return this.settingsService.updateSettings({ inventory: dto }, userId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.OWNER, Role.ADMIN)
+  @ApiBearerAuth()
+  @Patch('invoice')
+  @ApiOperation({ summary: 'Update invoice and billing settings' })
+  async updateInvoice(@Body() dto: InvoiceSettingsDto, @CurrentUser('id') userId: string) {
+    return this.settingsService.updateSettings({ invoice: dto }, userId);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

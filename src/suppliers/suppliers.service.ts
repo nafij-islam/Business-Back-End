@@ -106,4 +106,52 @@ export class SuppliersService {
 
     return supplier;
   }
+
+  async remove(id: string): Promise<{ success: boolean; message: string }> {
+    const supplier = await this.findOne(id);
+    supplier.isActive = false;
+    await supplier.save();
+    return { success: true, message: `Supplier '${supplier.name}' archived successfully` };
+  }
+
+  async getLedger(id: string): Promise<{ entries: any[] }> {
+    const supplier = await this.findOne(id);
+    const purchases = await this.supplierModel.db
+      .collection('purchases')
+      .find({ supplier: supplier._id })
+      .sort({ purchaseDate: 1, createdAt: 1 })
+      .toArray();
+
+    let runningBalance = supplier.openingBalance || 0;
+    const entries: any[] = [];
+
+    if (supplier.openingBalance) {
+      entries.push({
+        date: (supplier as any).createdAt || new Date(),
+        type: 'Opening Balance',
+        reference: 'OPENING',
+        debit: supplier.openingBalance > 0 ? supplier.openingBalance : 0,
+        credit: supplier.openingBalance < 0 ? Math.abs(supplier.openingBalance) : 0,
+        balance: runningBalance,
+      });
+    }
+
+    for (const purchase of purchases) {
+      const due =
+        purchase.dueAmount !== undefined
+          ? purchase.dueAmount
+          : ((purchase.grandTotal || 0) - (purchase.paidAmount || 0));
+      runningBalance += due;
+      entries.push({
+        date: purchase.purchaseDate || purchase.createdAt,
+        type: 'Purchase Order',
+        reference: purchase.purchaseNumber,
+        debit: purchase.grandTotal,
+        credit: purchase.paidAmount || 0,
+        balance: runningBalance,
+      });
+    }
+
+    return { entries };
+  }
 }

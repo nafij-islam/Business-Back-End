@@ -34,7 +34,7 @@ export class PurchasesController {
     return this.purchasesService.findOne(id);
   }
 
-  @Post(':id/return')
+  @Post([':id/return', ':id/returns'])
   @Roles(Role.OWNER, Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Process purchase return to supplier' })
   async processReturn(

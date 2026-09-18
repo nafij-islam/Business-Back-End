@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
 import { CreateProductDto, QueryProductDto, UpdateProductDto } from './dto/product.dto';
@@ -53,11 +53,25 @@ export class ProductsController {
     return this.productsService.update(id, dto, userId);
   }
 
+  @Delete(':id')
+  @Roles(Role.OWNER, Role.ADMIN)
+  @ApiOperation({ summary: 'Archive/Delete product' })
+  async remove(@Param('id') id: string, @CurrentUser('id') userId: string) {
+    return this.productsService.archive(id, userId);
+  }
+
   @Patch(':id/archive')
   @Roles(Role.OWNER, Role.ADMIN)
   @ApiOperation({ summary: 'Archive product (safe soft delete)' })
   async archive(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.productsService.archive(id, userId);
+  }
+
+  @Post(':id/restore')
+  @Roles(Role.OWNER, Role.ADMIN)
+  @ApiOperation({ summary: 'Restore archived product' })
+  async restorePost(@Param('id') id: string, @CurrentUser('id') userId: string) {
+    return this.productsService.restore(id, userId);
   }
 
   @Patch(':id/restore')

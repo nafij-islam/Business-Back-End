@@ -84,4 +84,10 @@ export class UnitsService {
 
     return unit.save();
   }
+
+  async remove(id: string): Promise<{ success: boolean; message: string }> {
+    const unit = await this.findOne(id);
+    await this.unitModel.findByIdAndDelete(id).exec();
+    return { success: true, message: `Unit '${unit.name}' deleted successfully` };
+  }
 }
