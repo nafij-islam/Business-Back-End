@@ -17,11 +17,11 @@ const compression = require('compression');
 const cookieParser = require('cookie-parser');
 import express, { Express, Request, Response } from 'express';
 
-import { AppModule } from '../src/app.module';
-import { AllExceptionsFilter } from '../src/common/filters/all-exceptions.filter';
-import { TransformInterceptor } from '../src/common/interceptors/transform.interceptor';
-import { LoggingInterceptor } from '../src/common/interceptors/logging.interceptor';
-import { APP_CONSTANTS } from '../src/common/constants/app.constants';
+import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { APP_CONSTANTS } from './common/constants/app.constants';
 
 let cachedServer: Express | null = null;
 
