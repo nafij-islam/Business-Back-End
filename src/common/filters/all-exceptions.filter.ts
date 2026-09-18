@@ -53,6 +53,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         error = 'Bad Request';
         message = `Invalid ID format for path: ${err.path}`;
       } else {
+        message = err.message || 'Internal server error';
         this.logger.error(`Unhandled Exception: ${err.message || err}`, err.stack);
       }
     } else {
