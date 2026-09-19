@@ -90,6 +90,15 @@ export class UsersService implements OnApplicationBootstrap {
       .exec();
   }
 
+  async findByResetToken(token: string): Promise<UserDocument | null> {
+    return this.userModel
+      .findOne({
+        resetPasswordToken: token,
+        resetPasswordExpires: { $gt: new Date() },
+      })
+      .exec();
+  }
+
   async count(): Promise<number> {
     return this.userModel.countDocuments().exec();
   }

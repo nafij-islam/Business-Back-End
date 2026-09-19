@@ -136,12 +136,15 @@ export class CustomersService {
     }
 
     for (const sale of sales) {
-      const due = sale.dueAmount !== undefined ? sale.dueAmount : ((sale.grandTotal || 0) - (sale.paidAmount || 0));
+      const due =
+        sale.dueAmount !== undefined
+          ? sale.dueAmount
+          : (sale.grandTotal || 0) - (sale.paidAmount || 0);
       runningBalance += due;
       entries.push({
         date: sale.saleDate || sale.createdAt,
         type: 'Sale Invoice',
-        reference: sale.invoiceNumber,
+        reference: sale.saleNumber || sale.invoiceNumber,
         debit: sale.grandTotal,
         credit: sale.paidAmount || 0,
         balance: runningBalance,

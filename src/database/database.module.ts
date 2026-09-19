@@ -37,11 +37,12 @@ export async function stopInMemoryReplSet(): Promise<void> {
         const isVercel = Boolean(process.env.VERCEL);
         let uri = configService.get<string>('database.uri') || process.env.MONGODB_URI;
 
-        // On Vercel serverless, ensure Atlas connection string is used and never launch in-memory replica set
-        if (isVercel) {
+        // On Vercel serverless or production, ensure valid MongoDB connection string is provided
+        if (isVercel || nodeEnv === 'production') {
           if (!uri || uri.includes('127.0.0.1') || uri.includes('localhost')) {
-            uri =
-              'mongodb+srv://Business:Loj1xHBCYNnW1wnG@cluster0.elf5jw4.mongodb.net/Business?appName=Cluster0';
+            throw new Error(
+              'Production/Vercel deployment requires a valid cloud MONGODB_URI environment variable.',
+            );
           }
         }
 

@@ -60,7 +60,7 @@ export class ProductsService {
       purchasePrice: dto.purchasePrice,
       sellingPrice: dto.sellingPrice,
       wholesalePrice: dto.wholesalePrice || null,
-      currentStock: openingStock,
+      currentStock: 0,
       openingStock,
       lowStockThreshold: dto.lowStockThreshold || null,
       trackStock: dto.trackStock !== undefined ? dto.trackStock : true,
@@ -69,13 +69,13 @@ export class ProductsService {
       isArchived: false,
     });
 
-    const saved = await product.save();
+    let saved: ProductDocument = (await product.save()) as ProductDocument;
 
     // If opening stock was specified and trackStock is true, record OPENING_STOCK transaction
     if (openingStock > 0 && product.trackStock) {
-      await this.inventoryService.recordMovement({
+      const movement = await this.inventoryService.recordMovement({
         productId: saved._id.toString(),
-        quantityDelta: 0, // already set in product.currentStock upon creation
+        quantityDelta: openingStock,
         type: StockTransactionType.OPENING_STOCK,
         unitCost: dto.purchasePrice,
         referenceType: 'ProductOpeningStock',
@@ -83,6 +83,7 @@ export class ProductsService {
         reason: 'Initial Opening Stock',
         performedBy: userId,
       });
+      saved = movement.product as ProductDocument;
     }
 
     await this.auditLogsService.log({

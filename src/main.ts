@@ -52,14 +52,19 @@ async function bootstrap() {
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps or curl/Postman)
       if (!origin) return callback(null, true);
-      const allowedOrigins = [
-        corsOrigin,
-        frontendUrl,
-        'https://business-front-end.vercel.app',
+      const configuredOrigins = [
+        ...(corsOrigin ? corsOrigin.split(',').map((o) => o.trim()) : []),
+        ...(frontendUrl ? frontendUrl.split(',').map((o) => o.trim()) : []),
         'http://localhost:3000',
         'http://127.0.0.1:3000',
-      ];
-      if (allowedOrigins.includes(origin) || !isProd) {
+      ].filter(Boolean);
+
+      const isAllowed =
+        !isProd ||
+        configuredOrigins.includes(origin) ||
+        (origin && configuredOrigins.some((allowed) => allowed === origin));
+
+      if (isAllowed) {
         return callback(null, true);
       }
       return callback(new Error('Blocked by CORS policy'));

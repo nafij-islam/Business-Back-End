@@ -140,7 +140,7 @@ export class SuppliersService {
       const due =
         purchase.dueAmount !== undefined
           ? purchase.dueAmount
-          : ((purchase.grandTotal || 0) - (purchase.paidAmount || 0));
+          : (purchase.grandTotal || 0) - (purchase.paidAmount || 0);
       runningBalance += due;
       entries.push({
         date: purchase.purchaseDate || purchase.createdAt,

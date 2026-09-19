@@ -96,47 +96,55 @@ export class InventoryService {
       transactionDate = new Date(),
     } = params;
 
-    const query = this.productModel.findById(productId);
-    if (session) query.session(session);
-    const product = await query.exec();
+    const initialQuery = this.productModel.findById(productId);
+    if (session) initialQuery.session(session);
+    const existingProduct = await initialQuery.exec();
 
-    if (!product) {
+    if (!existingProduct) {
       throw new NotFoundException(`Product with ID '${productId}' not found`);
     }
 
-    if (!product.trackStock) {
-      // For service items or untracked products, simply return
-      return { product, transaction: null as any };
+    if (!existingProduct.trackStock) {
+      // For service items or untracked products, return without transaction
+      return { product: existingProduct, transaction: null as any };
     }
 
-    const previousStock = product.currentStock;
-    const newStock = previousStock + quantityDelta;
+    const settings = await this.settingsService.getSettings();
+    const allowNegative = settings.inventory?.allowNegativeStock ?? false;
 
-    if (newStock < 0) {
-      const settings = await this.settingsService.getSettings();
-      if (!settings.inventory.allowNegativeStock) {
-        throw new BadRequestException(
-          `Insufficient stock for product '${product.name}' (SKU: ${product.SKU}). Current: ${previousStock}, Requested deduction: ${Math.abs(quantityDelta)}`,
-        );
-      }
+    // Database-level concurrency protection:
+    // If reducing stock and negative stock is disallowed, match only if currentStock >= requested deduction
+    const filter: Record<string, any> = { _id: productId };
+    if (quantityDelta < 0 && !allowNegative) {
+      filter.currentStock = { $gte: Math.abs(quantityDelta) };
     }
 
-    // Atomically update product stock
-    product.currentStock = newStock;
-    if (session) {
-      await product.save({ session });
-    } else {
-      await product.save();
+    const updateQuery = this.productModel.findOneAndUpdate(
+      filter,
+      { $inc: { currentStock: quantityDelta } },
+      { new: true, session: session || undefined },
+    );
+
+    const updatedProduct = await updateQuery.exec();
+
+    if (!updatedProduct) {
+      // Stock was insufficient under concurrent condition
+      throw new BadRequestException(
+        `Insufficient stock for product '${existingProduct.name}' (SKU: ${existingProduct.SKU}). Current: ${existingProduct.currentStock}, Requested deduction: ${Math.abs(quantityDelta)}`,
+      );
     }
+
+    const newStock = updatedProduct.currentStock;
+    const previousStock = newStock - quantityDelta;
 
     // Create StockTransaction log entry
     const transaction = new this.stockTransactionModel({
-      product: product._id,
+      product: updatedProduct._id,
       type,
       quantity: quantityDelta,
       previousStock,
       newStock,
-      unitCost: unitCost !== undefined ? unitCost : product.purchasePrice,
+      unitCost: unitCost !== undefined ? unitCost : updatedProduct.purchasePrice,
       referenceType,
       referenceId,
       reason,
@@ -153,10 +161,10 @@ export class InventoryService {
 
     // Check low stock & out of stock triggers (dispatched asynchronously after mutation)
     setImmediate(async () => {
-      await this.evaluateStockAlerts(product);
+      await this.evaluateStockAlerts(updatedProduct);
     });
 
-    return { product, transaction };
+    return { product: updatedProduct, transaction };
   }
 
   async stockIn(dto: StockInDto, userId?: string) {

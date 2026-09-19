@@ -376,6 +376,7 @@ export class ReportsService {
         supplierPayable: roundToTwoDecimals(payableAgg[0]?.total || 0),
       },
       dailyChartData: dailyData,
+      dailyBreakdown: dailyData,
       topSellingProducts: topProducts,
       topCategories,
     };

@@ -74,5 +74,38 @@ export function validateEnvironment(config: Record<string, unknown>) {
     throw new Error(`Environment validation failed: ${errors.toString()}`);
   }
 
+  // Security Hardening: Enforce production secrets
+  if (validatedConfig.NODE_ENV === Environment.Production) {
+    if (
+      !validatedConfig.JWT_ACCESS_SECRET ||
+      validatedConfig.JWT_ACCESS_SECRET.includes('default_dev') ||
+      validatedConfig.JWT_ACCESS_SECRET.length < 16
+    ) {
+      throw new Error(
+        'Production startup rejected: JWT_ACCESS_SECRET must be set to a secure, random string (min 16 chars).',
+      );
+    }
+
+    if (
+      !validatedConfig.JWT_REFRESH_SECRET ||
+      validatedConfig.JWT_REFRESH_SECRET.includes('default_dev') ||
+      validatedConfig.JWT_REFRESH_SECRET.length < 16
+    ) {
+      throw new Error(
+        'Production startup rejected: JWT_REFRESH_SECRET must be set to a secure, random string (min 16 chars).',
+      );
+    }
+
+    if (
+      !validatedConfig.MONGODB_URI ||
+      validatedConfig.MONGODB_URI.includes('127.0.0.1') ||
+      validatedConfig.MONGODB_URI.includes('localhost')
+    ) {
+      throw new Error(
+        'Production startup rejected: MONGODB_URI must be configured with a production database URI.',
+      );
+    }
+  }
+
   return validatedConfig;
 }

@@ -169,10 +169,7 @@ export class AuthService {
 
   async resetPassword(dto: ResetPasswordDto) {
     const hashedToken = crypto.createHash('sha256').update(dto.token).digest('hex');
-    const user = await (this.usersService as any).userModel.findOne({
-      resetPasswordToken: hashedToken,
-      resetPasswordExpires: { $gt: new Date() },
-    });
+    const user = await this.usersService.findByResetToken(hashedToken);
 
     if (!user) {
       throw new BadRequestException('Invalid or expired password reset token');
