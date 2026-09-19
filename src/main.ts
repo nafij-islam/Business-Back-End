@@ -57,11 +57,13 @@ async function bootstrap() {
         ...(frontendUrl ? frontendUrl.split(',').map((o) => o.trim()) : []),
         'http://localhost:3000',
         'http://127.0.0.1:3000',
+        'https://business-front-end.vercel.app',
       ].filter(Boolean);
 
       const isAllowed =
         !isProd ||
         configuredOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
         (origin && configuredOrigins.some((allowed) => allowed === origin));
 
       if (isAllowed) {
